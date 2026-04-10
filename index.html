@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interactive Profile System</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: linear-gradient(135deg, #0f0f1a, #1a1a2e, #16213e);
+    color: #eaeaf0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+}
+
+.section {
+    background: rgba(30, 30, 50, 0.85);
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.profile-wrapper img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 3px solid #7f5af0;
+    cursor: pointer;
+    object-fit: cover;
+}
+
+button {
+    margin: 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7f5af0, #00c6ff);
+    color: white;
+    cursor: pointer;
+}
+
+li {
+    padding: 10px;
+    margin: 5px;
+    background: rgba(50,50,80,0.6);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+li:hover {
+    background: #4444aa;
+}
+
+.selected {
+    background: #00c6ff !important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- PROFILE -->
+<div class="section">
+
+<input type="file" id="picInput" hidden>
+
+<div class="profile-wrapper">
+   <img id="profilePic" src="https://via.placeholder.com/150">
+</div>
+
+<h1 id="nameText">Vinzent Alexis V. Tanacio</h1>
+<button onclick="editName()"><i class="fa fa-pen"></i> Edit Name</button>
+
+<p id="bioText">If AI is your power, what are you without it?</p>
+<button onclick="editBio()"><i class="fa fa-pen"></i> Edit Bio</button>
+</div>
+
+<!-- SKILLS -->
+<div class="section">
+<h2>Skills</h2>
+<ul id="skillsList">
+    <li draggable="true">HTML</li>
+    <li draggable="true">CSS</li>
+    <li draggable="true">JavaScript</li>
+</ul>
+
+<input id="skillInput" style="display:none;" placeholder="Add skill">
+<button onclick="showSkillInput()">Add Skill</button>
+<button onclick="deleteSelected('skillsList')">Delete</button>
+</div>
+
+<!-- EDUCATION -->
+<div class="section">
+<h2>Education</h2>
+<ul id="eduList">
+    <li draggable="true">PSU(Goa Campus) | BSIT-2D | 2026</li>
+</ul>
+
+<input id="eduInput" style="display:none;" placeholder="Add education">
+<button onclick="showEduInput()">Add Education</button>
+<button onclick="deleteSelected('eduList')">Delete</button>
+</div>
+
+<!-- HOBBIES -->
+<div class="section">
+<h2>Hobbies</h2>
+<ul id="hobbyList">
+    <li draggable="true">Gaming</li>
+    <li draggable="true">Music</li>
+    <li draggable="true">Editing</li>
+    <li draggable="true">Firing Range</li>
+    <li draggable="true">Wake Boarding</li>
+    <li draggable="true">Novel Maker</li>
+    <li draggable="true">Reading</li>
+</ul>
+
+<input id="hobbyInput" style="display:none;" placeholder="Add hobby">
+<button onclick="showHobbyInput()">Add Hobby</button>
+<button onclick="deleteSelected('hobbyList')">Delete</button>
+</div>
+
+<!-- RESET -->
+<button onclick="resetAll()"><i class="fa fa-rotate"></i> Reset</button>
+
+</div>
+
+<script>
+
+let dragged;
+
+// ================= LOGGING =================
+function log(msg){
+    console.log(msg);
+}
+
+// ================= IMAGE =================
+document.getElementById("profilePic").onclick = () => {
+    document.getElementById("picInput").click();
+};
+
+document.getElementById("picInput").onchange = e => {
+    let file = e.target.files[0];
+    if(!file) return;
+
+    let reader = new FileReader();
+    reader.onload = () => {
+        document.getElementById("profilePic").src = reader.result;
+        log("Profile picture updated");
+        save();
+    };
+    reader.readAsDataURL(file);
+};
+
+// ================= NAME =================
+function editName(){
+    let el = document.getElementById("nameText");
+    let input = document.createElement("input");
+    input.value = el.innerText;
+    el.replaceWith(input);
+
+    input.onblur = input.onkeydown = e => {
+        if(e.type === "blur" || e.key === "Enter"){
+            let h = document.createElement("h1");
+            h.id = "nameText";
+            h.innerText = input.value;
+            input.replaceWith(h);
+            log("Name edited");
+            save();
+        }
+    };
+}
+
+// ================= BIO =================
+function editBio(){
+    let el = document.getElementById("bioText");
+    let input = document.createElement("input");
+    input.value = el.innerText;
+    el.replaceWith(input);
+
+    input.onblur = input.onkeydown = e => {
+        if(e.type === "blur" || e.key === "Enter"){
+            let p = document.createElement("p");
+            p.id = "bioText";
+            p.innerText = input.value;
+            input.replaceWith(p);
+            log("Bio edited");
+            save();
+        }
+    };
+}
+
+// ================= ADD INPUTS =================
+function showSkillInput(){
+    let i = document.getElementById("skillInput");
+    i.style.display = "block";
+
+    i.onkeydown = e=>{
+        if(e.key === "Enter"){
+            addItem("skillsList", i.value, "Skill added");
+            i.value = "";
+            i.style.display = "none";
+        }
+    };
+}
+
+function showEduInput(){
+    let i = document.getElementById("eduInput");
+    i.style.display = "block";
+
+    i.onkeydown = e=>{
+        if(e.key === "Enter"){
+            addItem("eduList", i.value, "Education added");
+            i.value = "";
+            i.style.display = "none";
+        }
+    };
+}
+
+function showHobbyInput(){
+    let i = document.getElementById("hobbyInput");
+    i.style.display = "block";
+
+    i.onkeydown = e=>{
+        if(e.key === "Enter"){
+            addItem("hobbyList", i.value, "Hobby added");
+            i.value = "";
+            i.style.display = "none";
+        }
+    };
+}
+
+// ================= ADD ITEM =================
+function addItem(listId,value,msg){
+    if(!value.trim()) return;
+
+    let li = document.createElement("li");
+    li.innerText = value;
+    li.draggable = true;
+
+    document.getElementById(listId).appendChild(li);
+
+    log(msg + ": " + value);
+    save();
+    attach();
+}
+
+// ================= DELETE =================
+function deleteSelected(listId){
+    document.querySelectorAll("#"+listId+" .selected")
+    .forEach(el=>{
+        log("Deleted: " + el.innerText);
+        el.remove();
+    });
+
+    save();
+}
+
+// ================= DRAG + CLICK =================
+function attach(){
+    document.querySelectorAll("li").forEach(li=>{
+        li.onclick = ()=> li.classList.toggle("selected");
+
+        li.ondragstart = ()=> dragged = li;
+
+        li.ondragover = e => e.preventDefault();
+
+        li.ondrop = e=>{
+            e.preventDefault();
+            if(li.parentNode === dragged.parentNode){
+                li.parentNode.insertBefore(dragged, li);
+                log("Item reordered");
+                save();
+            }
+        };
+    });
+}
+
+// ================= SAVE =================
+function save(){
+    localStorage.setItem("profile", document.body.innerHTML);
+}
+
+// ================= LOAD =================
+window.onload = ()=>{
+    let data = localStorage.getItem("profile");
+    if(data) document.body.innerHTML = data;
+    attach();
+};
+
+// ================= RESET =================
+function resetAll(){
+    localStorage.clear();
+    location.reload();
+    log("Reset performed");
+}
+
+</script>
+
+</body>
+</html>
